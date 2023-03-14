@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "finance-helper"
+version = "0.1.0"
+description = ""
+authors = ["Junnoh Lee <pluruel@gmail.com>"]
+readme = "README.md"
+packages = [{include = "finance_helper"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.94.1"
+uvicorn = "^0.21.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
