@@ -10,6 +10,7 @@ packages = [{include = "finance_helper"}]
 python = "^3.11"
 fastapi = "^0.94.1"
 uvicorn = "^0.21.0"
+alembic = "^1.10.2"
 
 
 [build-system]
