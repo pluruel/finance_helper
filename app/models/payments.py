@@ -28,6 +28,17 @@ class Family(Base):
     payment_methods = relationship("PaymentMethods", back_populates="family")
 
 
+class Account(Base):
+    __tablename__ = "account"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+
+    account_id = Column(Integer, ForeignKey("account.id"))
+
+    balance = Column(Integer)
+
+
 class PaymentMethod(Base):
     __tablename__ = "payment_method"
 
@@ -54,29 +65,43 @@ class Unit(Base):
     ratio_with_standard = Column(DOUBLE, default=1.0)
 
 
+class Price(Base):
+    __tablename__ = "price"
+    id = Column(Integer, primary_key=True, index=True)
+
+    date = Column(Date, default=datetime.now)
+    item_id = Column(Integer, ForeignKey("item.id"))
+
+
 class Item(Base):
     __tablename__ = "item"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(Integer, unique=True, index=True)
+    name = Column(String, unique=True, index=True)
 
-    price = Column(Integer, unique=True, index=True)
-    account_id = Column(Integer, ForeignKey("account.id"))
+    transaction_target_id = Column(
+        Integer, ForeignKey("transaction_target.id"), index=True
+    )
+
+    prices = relationship("Price", back_populates="item")
 
 
-class Account(Base):
-    __tablename__ = "account"
+class TransactionTarget(Base):
+    __tablename__ = "transaction_target"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(Integer, unique=True, index=True)
+    name = Column(String, unique=True, index=True)
 
 
 class Transaction(Base):
+    __tablename__ = "transaction"
+
     id = Column(Integer, primary_key=True, index=True)
 
     family_id = Column(Integer, ForeignKey("family.id"))
     payment_method_id = Column(Integer, ForeignKey("family.id"))
-    item_id = Column(Integer, ForeignKey("item.id"))
+
     spend_category_id = Column(Integer, ForeignKey("spend_category.id"))
+    transaction_target_id = Column(Integer, ForeignKey("transaction_target.id"))
 
     date = Column(Date, default=datetime.now)
 
