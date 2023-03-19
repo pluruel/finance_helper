@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from datetime import datetime
 
 from sqlalchemy import (
@@ -13,7 +12,6 @@ from sqlalchemy import (
     DOUBLE,
     Date,
 )
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, Session
 
 from app.db.base_class import Base
@@ -34,7 +32,7 @@ class Account(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
 
-    account_id = Column(Integer, ForeignKey("account.id"))
+    account_id = Column(Integer, ForeignKey("account.id"), index=True)
 
     balance = Column(Integer)
 
@@ -43,18 +41,21 @@ class PaymentMethod(Base):
     __tablename__ = "payment_method"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(16), index=True, unique=True)
+    name = Column(String, index=True, unique=True)
+    tax_deduction_rate = Column(DOUBLE)
 
-    deduction_rate = Column(DOUBLE)
+    family_id = Column(Integer, ForeignKey("family.id"), index=True)
 
-    family_id = Column(Integer, ForeignKey("family.id"))
+    transactions = relationship("Transaction", back_populates="payment_method")
 
 
-class SpendCategory(Base):
-    __tablename__ = "spend_category"
+class Category(Base):
+    __tablename__ = "category"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, unique=True)
+
+    items = relationship("Items", back_populates="category")
 
 
 class Unit(Base):
@@ -69,8 +70,9 @@ class Price(Base):
     __tablename__ = "price"
     id = Column(Integer, primary_key=True, index=True)
 
+    item_id = Column(Integer, ForeignKey("item.id"), index=True)
+
     date = Column(Date, default=datetime.now)
-    item_id = Column(Integer, ForeignKey("item.id"))
 
 
 class Item(Base):
@@ -81,6 +83,8 @@ class Item(Base):
     transaction_target_id = Column(
         Integer, ForeignKey("transaction_target.id"), index=True
     )
+    category_id = Column(Integer, ForeignKey("category.id"), index=True)
+    unit_id = Column(Integer, ForeignKey("unit.id"), index=True)
 
     prices = relationship("Price", back_populates="item")
 
@@ -91,42 +95,18 @@ class TransactionTarget(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
 
+    items = relationship("Items", back_populates="transaction_target")
+
 
 class Transaction(Base):
     __tablename__ = "transaction"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    family_id = Column(Integer, ForeignKey("family.id"))
-    payment_method_id = Column(Integer, ForeignKey("family.id"))
-
-    spend_category_id = Column(Integer, ForeignKey("spend_category.id"))
-    transaction_target_id = Column(Integer, ForeignKey("transaction_target.id"))
+    payment_method_id = Column(Integer, ForeignKey("payment_method.id"))
+    item_id = Column(Integer, ForeignKey("item.id"))
 
     date = Column(Date, default=datetime.now)
-
-
-class ProductType(Base):
-    __tablename__ = "product_type"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(16), index=True, unique=True)
-
-    products = relationship("Product", back_populates="product_type")
-
-    def get_product_type(db: Session, product_type_dict: dict):
-        product_type = db.query(ProductType).filter(
-            ProductType.name == product_type_dict["name"]
-        )
-
-        if product_type.count() > 0:
-            return product_type.first()
-        else:
-            new_product_type = ProductType(**product_type_dict)
-            db.add(new_product_type)
-            db.commit()
-            db.refresh(new_product_type)
-            return new_product_type
 
 
 class File(Base):
