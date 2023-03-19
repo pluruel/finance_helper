@@ -11,6 +11,9 @@ python = "^3.11"
 fastapi = "^0.94.1"
 uvicorn = "^0.21.0"
 alembic = "^1.10.2"
+pydantic = {extras = ["email"], version = "^1.10.6"}
+python-dotenv = "^1.0.0"
+psycopg2-binary = "^2.9.5"
 
 
 [build-system]

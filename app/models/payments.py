@@ -5,10 +5,6 @@ from sqlalchemy import (
     Integer,
     String,
     ForeignKey,
-    DateTime,
-    UniqueConstraint,
-    CHAR,
-    Boolean,
     DOUBLE,
     Date,
 )
@@ -108,21 +104,3 @@ class Transaction(Base):
 
     date = Column(Date, default=datetime.now)
 
-
-class File(Base):
-    id = Column(Integer, primary_key=True, index=True)
-
-    host = Column(String)
-    filepath = Column(String)
-    sha1 = Column(CHAR(40), index=True, nullable=True)
-
-    creator_id = Column(Integer, ForeignKey("user.id"))
-    creator = relationship("User", back_populates="files")
-
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-
-    product = relationship("Product", back_populates="file")
-    workspace_db = relationship("WorkspaceDB", back_populates="file")
-
-    __table_args__ = (UniqueConstraint("host", "filepath", name="_host_filepath"),)

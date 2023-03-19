@@ -1,4 +1,4 @@
-from .payments import (
+from .payments import (  # noqa
     Category,
     PaymentMethod,
     Transaction,
@@ -7,7 +7,6 @@ from .payments import (
     TransactionTarget,
     Price,
     Account,
-    File,
     Unit,
     Family,
 )
