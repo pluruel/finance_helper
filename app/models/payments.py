@@ -1,13 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    ForeignKey,
-    DOUBLE,
-    Date,
-)
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Double
 from sqlalchemy.orm import relationship, Session
 
 from app.db.base_class import Base
@@ -28,7 +21,7 @@ class Account(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
 
-    account_id = Column(Integer, ForeignKey("account.id"), index=True)
+    family_id = Column(Integer, ForeignKey("family.id"), index=True)
 
     balance = Column(Integer)
 
@@ -38,7 +31,7 @@ class PaymentMethod(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, unique=True)
-    tax_deduction_rate = Column(DOUBLE)
+    tax_deduction_rate = Column(Double)
 
     family_id = Column(Integer, ForeignKey("family.id"), index=True)
 
@@ -59,7 +52,7 @@ class Unit(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, unique=True)
 
-    ratio_with_standard = Column(DOUBLE, default=1.0)
+    ratio = Column(Double, default=1.0)
 
 
 class Price(Base):
@@ -103,4 +96,3 @@ class Transaction(Base):
     item_id = Column(Integer, ForeignKey("item.id"))
 
     date = Column(Date, default=datetime.now)
-
