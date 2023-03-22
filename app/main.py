@@ -4,7 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 from strawberry.fastapi import GraphQLRouter
 
 from app.core.config import settings
-from app.graphql.schema import schema
+from app.api.graphql import schema
 
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_STR}/openapi.json"
