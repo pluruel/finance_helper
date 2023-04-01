@@ -116,53 +116,75 @@ class Price(Base):
 class Item(Base):
     __tablename__ = "item"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
+    name = Column(String, unique=True, index=True)
     quantity = Column(Float)
 
-    transaction_target_id = Column(
-        Integer, ForeignKey("transaction_target.id"), index=True
-    )
     category_id = Column(Integer, ForeignKey("category.id"), index=True)
     unit_id = Column(Integer, ForeignKey("unit.id"), index=True)
 
     prices = relationship("Price", back_populates="item")
-
-    __table_args__ = (
-        UniqueConstraint(
-            "name", "transaction_target_id", name="item_name_transaction_target_id"
-        ),
+    transaction_targets = relationship(
+        "TransactionTarget", secondary="transaction_target_item", back_populates="items"
     )
 
     @staticmethod
     def get_item(db: Session, item_dict: dict):
-        items = db.query(Item).filter(
-            and_(
-                Item.name == item_dict["name"],
-                Item.transaction_target_id == item_dict["transaction_target_id"],
-            )
-        )
+        item = db.query(Item).filter(Item.name == item_dict["name"]).first()
 
-        if items.count() > 0:
-            return items.first()
-        else:
-            item = Item(**item_dict)
-            db.add(item)
-            db.commit
-            db.refresh(item)
+        if item is not None:
             return item
+
+        item = Item(**item_dict)
+        transaction_target = db.query(TransactionTarget).get(
+            item_dict["transaction_target_id"]
+        )
+        item.transaction_targets.append(transaction_target)
+        db.add(item)
+        db.commit()
+        db.refresh(item)
+        return item
 
 
 class TransactionTarget(Base):
-    tablename = "transaction_target"
+    __tablename__ = "transaction_target"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
 
-    items = relationship("Item", back_populates="transaction_target")
+    items = relationship(
+        "Item",
+        secondary="transaction_target_item",
+        back_populates="transaction_targets",
+    )
+
+    @staticmethod
+    def get_transaction_target(db: Session, transaction_target_dict: dict):
+        transaction_target = (
+            db.query(TransactionTarget)
+            .filter(TransactionTarget.name == transaction_target_dict["name"])
+            .first()
+        )
+
+        if transaction_target:
+            return transaction_target
+        else:
+            transaction_target = TransactionTarget(**transaction_target_dict)
+            db.add(transaction_target)
+            db.commit()
+            db.refresh(transaction_target)
+            return transaction_target
+
+
+class TransactionTargetItem(Base):
+    __tablename__ = "transaction_target_item"
+    transaction_target_id = Column(
+        Integer, ForeignKey("transaction_target.id"), primary_key=True
+    )
+    item_id = Column(Integer, ForeignKey("item.id"), primary_key=True)
 
 
 class Transaction(Base):
-    tablename = "transaction"
+    __tablename__ = "transaction"
     id = Column(Integer, primary_key=True, index=True)
 
     payment_method_id = Column(Integer, ForeignKey("payment_method.id"))

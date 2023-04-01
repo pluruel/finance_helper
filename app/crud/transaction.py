@@ -55,6 +55,14 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionCreate
         )
         db.add(transaction)
 
+        # Create the TransactionTargetItem
+        transaction_target_item = TransactionTargetItem(
+            transaction_id=transaction.id,
+            transaction_target_id=transaction_target.id,
+            item_id=item.id,
+        )
+        db.add(transaction_target_item)
+
         try:
             db.commit()
             db.refresh(transaction)
