@@ -25,25 +25,21 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionCreate
             db=db, name=payment_method_data["name"], family=obj_in.family
         )
         transaction_target = TransactionTarget.get_category(
-            db=db, name=item_data["transaction_target"]
+            db=db, name=item_data.transaction_target
         )
         category = Category.get_category(db=db, name=item_data["category"])
         unit = Unit.get_category(db=db, name=item_data["unit"])
 
         item_dict = {
             "name": item_data["name"],
-            "transaction_target_id": transaction_target.id,
             "category_id": category.id,
             "unit_id": unit.id,
+            "transaction_target_id": transaction_target.id,
         }
         item = Item.get_item(db=db, item_dict=item_dict)
 
         # Create the price
-        price_dict = {
-            "value": item_data["price"]["value"],
-            "date": item_data["price"]["date"] or obj_in.date,
-        }
-        price = Price.get_price(db=db, price_dict=price_dict)
+        price = Price.get_price(db=db, price=item_data.price, date=obj_in.date)
 
         # Associate the price with the item
         item.prices.append(price)
@@ -54,14 +50,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionCreate
             payment_method_id=payment_method.id, item_id=item.id, date=obj_in.date
         )
         db.add(transaction)
-
-        # Create the TransactionTargetItem
-        transaction_target_item = TransactionTargetItem(
-            transaction_id=transaction.id,
-            transaction_target_id=transaction_target.id,
-            item_id=item.id,
-        )
-        db.add(transaction_target_item)
 
         try:
             db.commit()

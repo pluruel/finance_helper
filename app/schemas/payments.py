@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -87,7 +87,7 @@ class PriceBase(BaseModel):
 
 class PriceCreate(BaseModel):
     value: float
-    date: datetime.date
+    date: date
 
 
 class Price(PriceBase):
@@ -136,9 +136,24 @@ class TransactionBase(BaseModel):
     date: Optional[str]
 
 
-class TransactionCreate(TransactionBase):
-    payment_method_id: int
-    item_id: int
+class PaymentMethodData(BaseModel):
+    name: str
+
+
+class ItemData(BaseModel):
+    name: str
+    transaction_target: str
+    category: str
+    unit: str
+    price: float
+    quantity: float
+
+
+class TransactionCreate(BaseModel):
+    family: Optional[str] = None
+    date: Optional[date] = None
+    payment_method: PaymentMethodData
+    item: ItemData
 
 
 class Transaction(TransactionBase):

@@ -12,6 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, Session
 
+from app import schemas
 from app.db.base_class import Base
 
 
@@ -95,18 +96,18 @@ class Price(Base):
     __table_args__ = (UniqueConstraint("date", "value", name="price_date_cost"),)
 
     @staticmethod
-    def get_price(db: Session, price_dict: dict):
+    def get_price(db: Session, value: float, date: date):
         prices = db.query(Price).filter(
             and_(
-                Price.value == price_dict["value"],
-                Price.date == price_dict["date"],
+                Price.value == value,
+                Price.date == date,
             )
         )
 
         if prices.count() > 0:
             return prices.first()
         else:
-            price = Price(**price_dict)
+            price = Price()
             db.add(price)
             db.commit
             db.refresh(price)
@@ -128,16 +129,14 @@ class Item(Base):
     )
 
     @staticmethod
-    def get_item(db: Session, item_dict: dict):
-        item = db.query(Item).filter(Item.name == item_dict["name"]).first()
+    def get_item(db: Session, item: schemas.ItemCreate):
+        item = db.query(Item).filter(Item.name == item.name).first()
 
         if item is not None:
             return item
 
-        item = Item(**item_dict)
-        transaction_target = db.query(TransactionTarget).get(
-            item_dict["transaction_target_id"]
-        )
+        item = Item(**item)
+        transaction_target = db.query(TransactionTarget).get(item.transaction_target_id)
         item.transaction_targets.append(transaction_target)
         db.add(item)
         db.commit()
@@ -158,17 +157,19 @@ class TransactionTarget(Base):
     )
 
     @staticmethod
-    def get_transaction_target(db: Session, transaction_target_dict: dict):
+    def get_transaction_target(
+        db: Session, transaction_target: schemas.TransactionTargetBase
+    ):
         transaction_target = (
             db.query(TransactionTarget)
-            .filter(TransactionTarget.name == transaction_target_dict["name"])
+            .filter(TransactionTarget.name == transaction_target.name)
             .first()
         )
 
         if transaction_target:
             return transaction_target
         else:
-            transaction_target = TransactionTarget(**transaction_target_dict)
+            transaction_target = TransactionTarget(**transaction_target)
             db.add(transaction_target)
             db.commit()
             db.refresh(transaction_target)

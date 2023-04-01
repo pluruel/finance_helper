@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 
-from app.api.api_v1.endpoints import login, users, files
+from app.api.endpoints import transaction
 
 api_router = APIRouter()
-api_router.include_router(login.router, prefix="/login", tags=["login"])
-api_router.include_router(users.router, prefix="/users", tags=["user"])
-api_router.include_router(files.router, prefix="/files", tags=["utils"])
+api_router.include_router(
+    transaction.router, prefix="/transaction", tags=["transaction"]
+)
 # api_router.include_router(items.router, prefix="/items", tags=["items"])
