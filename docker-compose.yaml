@@ -23,15 +23,15 @@ services:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
 
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    expose:
-      - 8000
-    ports:
-      - 8000:8000
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@ndc_postgres:5432/${POSTGRES_DB}
-      - PYTHONPATH=/code/
+  # web:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   expose:
+  #     - 8000
+  #   ports:
+  #     - 8000:8000
+  #   environment:
+  #     - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@ndc_postgres:5432/${POSTGRES_DB}
+  #     - PYTHONPATH=/code/
 
