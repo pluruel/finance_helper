@@ -62,8 +62,7 @@ class PaymentMethod(Base):
         else:
             item = PaymentMethod(name=name, family_id=family.id)
             db.add(item)
-            db.commit()
-            db.refresh(item)
+            db.flush()
             return item
 
 
@@ -109,8 +108,7 @@ class Price(Base):
         else:
             price = Price()
             db.add(price)
-            db.commit
-            db.refresh(price)
+            db.flush()
             return price
 
 
@@ -139,8 +137,7 @@ class Item(Base):
         transaction_target = db.query(TransactionTarget).get(item.transaction_target_id)
         item.transaction_targets.append(transaction_target)
         db.add(item)
-        db.commit()
-        db.refresh(item)
+        db.flush()
         return item
 
 
@@ -171,8 +168,7 @@ class TransactionTarget(Base):
         else:
             transaction_target = TransactionTarget(**transaction_target)
             db.add(transaction_target)
-            db.commit()
-            db.refresh(transaction_target)
+            db.flush()
             return transaction_target
 
 
