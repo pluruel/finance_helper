@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from fastapi import HTTPException
 from sqlalchemy import (
     Column,
     Integer,
@@ -74,6 +75,18 @@ class Category(Base):
 
     items = relationship("Item", back_populates="category")
 
+    @staticmethod
+    def get_category(db: Session, name: str):
+        category_q = db.query(Category).filter(Category.name == name)
+
+        if category_q.count() > 0:
+            return category_q.first()
+        else:
+            item = Category(name=name)
+            db.add(item)
+            db.flush()
+            return item
+
 
 class Unit(Base):
     __tablename__ = "unit"
@@ -81,6 +94,15 @@ class Unit(Base):
     name = Column(String, index=True, unique=True)
 
     ratio = Column(Float, default=1.0)
+
+    @staticmethod
+    def get_unit(db: Session, name: str):
+        unit_q = db.query(Unit).filter(Unit.name == name)
+
+        if unit_q.count() > 0:
+            return unit_q.first()
+        else:
+            raise HTTPException(status_code=404, detail="There is no proper unit.")
 
 
 class Price(Base):

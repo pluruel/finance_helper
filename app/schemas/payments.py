@@ -151,7 +151,7 @@ class ItemData(BaseModel):
 
 class TransactionCreate(BaseModel):
     family: Optional[str] = None
-    date: Optional[date] = None
+    date: date
     payment_method: PaymentMethodData
     item: ItemData
 

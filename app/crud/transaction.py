@@ -23,10 +23,10 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionCreate
                 item_data = obj_in.item
 
                 # Retrieve or create the related objects using get_~ methods
-                payment_method = PaymentMethod.get_category(
+                payment_method = PaymentMethod.get_payment_method(
                     db=db, name=payment_method_data["name"], family=obj_in.family
                 )
-                transaction_target = TransactionTarget.get_category(
+                transaction_target = TransactionTarget.get_transaction_target(
                     db=db, name=item_data.transaction_target
                 )
                 category = Category.get_category(db=db, name=item_data["category"])
