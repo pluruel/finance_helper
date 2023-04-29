@@ -13,8 +13,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, Session
 
-from app import schemas
 from app.db.base_class import Base
+from app.utils.case import parse_date
 
 
 class Family(Base):
@@ -125,18 +125,19 @@ class Price(Base):
     __table_args__ = (UniqueConstraint("date", "value", name="price_date_cost"),)
 
     @staticmethod
-    def get_price(db: Session, value: float, date: date):
+    def get_price(db: Session, value: float, date_str: str):
+        price_date = parse_date(date_str)
         prices = db.query(Price).filter(
             and_(
                 Price.value == value,
-                Price.date == date,
+                Price.date == price_date,
             )
         )
 
         if prices.count() > 0:
             return prices.first()
         else:
-            price = Price()
+            price = Price(value=value, date=price_date)
             db.add(price)
             db.flush()
             return price
@@ -194,14 +195,12 @@ class TransactionTarget(Base):
 
     @staticmethod
     def get_transaction_target(db: Session, transaction_target: str):
-        transaction_target = (
-            db.query(TransactionTarget)
-            .filter(TransactionTarget.name == transaction_target)
-            .first()
+        transaction_target_quary = db.query(TransactionTarget).filter(
+            TransactionTarget.name == transaction_target
         )
 
-        if transaction_target:
-            return transaction_target
+        if transaction_target_quary.count():
+            return transaction_target_quary.first()
         else:
             transaction_target = TransactionTarget(name=transaction_target)
             db.add(transaction_target)

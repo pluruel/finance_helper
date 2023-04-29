@@ -13,11 +13,14 @@ from app.models import (
     Item,
     Price,
 )
-from app.schemas.payments import TransactionCreate
+from app import schemas
+from app.utils.case import parse_date
 
 
-class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionCreate]):
-    def create(self, db: Session, *, obj_in: TransactionCreate) -> Transaction:
+class CRUDTransaction(
+    CRUDBase[Transaction, schemas.TransactionCreate, schemas.TransactionCreate]
+):
+    def create(self, db: Session, *, obj_in: schemas.TransactionCreate) -> Transaction:
         # Extract data from obj_in
         try:
             with db.begin_nested():
@@ -30,7 +33,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionCreate
                 )
                 transaction = Transaction(
                     payment_method_id=payment_method.id,
-                    date=obj_in.date,
+                    date=parse_date(obj_in.date),
                 )
                 for item in items:
                     transaction_target = TransactionTarget.get_transaction_target(
@@ -47,7 +50,9 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionCreate
                     new_item = Item.get_item(db=db, item_dict=item_dict)
 
                     # Create the price
-                    price = Price.get_price(db=db, value=item.price, date=obj_in.date)
+                    price = Price.get_price(
+                        db=db, value=item.price, date_str=obj_in.date
+                    )
 
                     # Associate the price with the item
                     new_item.prices.append(price)
@@ -59,7 +64,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionCreate
 
                 db.add(transaction)
                 db.commit()
-                db.refresh(transaction)
+
         except Exception as e:
             db.rollback()
             traceback.print_exc()
@@ -68,6 +73,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionCreate
                 detail="An error occurred while creating the transaction",
             )
 
+        db.refresh(transaction)
         return transaction
 
 

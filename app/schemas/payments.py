@@ -82,12 +82,12 @@ class Unit(UnitBase):
 
 
 class PriceBase(BaseModel):
-    date: Optional[str]
+    date: Optional[date]
 
 
 class PriceCreate(BaseModel):
     value: float
-    date: date
+    date: str
 
 
 class Price(PriceBase):
@@ -133,7 +133,7 @@ class TransactionTarget(TransactionTargetBase):
 
 
 class TransactionBase(BaseModel):
-    date: Optional[str]
+    date: Optional[date]
 
 
 class PaymentMethodData(BaseModel):
@@ -151,7 +151,7 @@ class ItemData(BaseModel):
 
 class TransactionCreate(BaseModel):
     family: Optional[str] = None
-    date: date
+    date: str
     payment_method: PaymentMethodData
     items: List[ItemData]
 
