@@ -47,21 +47,25 @@ class PaymentMethod(Base):
     family_id = Column(Integer, ForeignKey("family.id"), index=True)
 
     transactions = relationship("Transaction", back_populates="payment_method")
+    family = relationship("Family", back_populates="payment_methods")
 
     __table_args__ = (
         UniqueConstraint("name", "family_id", name="payment_mtd_name_family_id"),
     )
 
     @staticmethod
-    def get_payment_method(db: Session, name: str, family: Family):
-        payment_method = db.query(PaymentMethod).filter(
-            and_(PaymentMethod.name == name, PaymentMethod.family_id == family.id)
+    def get_payment_method(db: Session, name: str, family: str):
+        payment_method = (
+            db.query(PaymentMethod)
+            .join(Family)
+            .filter(and_(PaymentMethod.name == name, Family.name == family))
         )
 
         if payment_method.count() > 0:
             return payment_method.first()
         else:
-            item = PaymentMethod(name=name, family_id=family.id)
+            f = db.query(Family).filter(Family.name == family).first()
+            item = PaymentMethod(name=name, family=f)
             db.add(item)
             db.flush()
             return item
@@ -95,6 +99,8 @@ class Unit(Base):
 
     ratio = Column(Float, default=1.0)
 
+    items = relationship("Item", back_populates="unit")
+
     @staticmethod
     def get_unit(db: Session, name: str):
         unit_q = db.query(Unit).filter(Unit.name == name)
@@ -113,6 +119,8 @@ class Price(Base):
 
     value = Column(Float)
     date = Column(Date, default=datetime.now)
+
+    item = relationship("Item", back_populates="prices")
 
     __table_args__ = (UniqueConstraint("date", "value", name="price_date_cost"),)
 
@@ -134,6 +142,12 @@ class Price(Base):
             return price
 
 
+class TransactionItemAssociation(Base):
+    __tablename__ = "transaction_item_association"
+    transaction_id = Column(Integer, ForeignKey("transaction.id"), primary_key=True)
+    item_id = Column(Integer, ForeignKey("item.id"), primary_key=True)
+
+
 class Item(Base):
     __tablename__ = "item"
     id = Column(Integer, primary_key=True, index=True)
@@ -144,20 +158,23 @@ class Item(Base):
     unit_id = Column(Integer, ForeignKey("unit.id"), index=True)
 
     prices = relationship("Price", back_populates="item")
+    category = relationship("Category", back_populates="items")
+    unit = relationship("Unit", back_populates="items")
     transaction_targets = relationship(
         "TransactionTarget", secondary="transaction_target_item", back_populates="items"
     )
+    transactions = relationship(
+        "Transaction", secondary="transaction_item_association", back_populates="items"
+    )
 
     @staticmethod
-    def get_item(db: Session, item: schemas.ItemCreate):
-        item = db.query(Item).filter(Item.name == item.name).first()
+    def get_item(db: Session, item_dict: dict):
+        item = db.query(Item).filter(Item.name == item_dict["name"]).first()
 
         if item is not None:
             return item
 
-        item = Item(**item)
-        transaction_target = db.query(TransactionTarget).get(item.transaction_target_id)
-        item.transaction_targets.append(transaction_target)
+        item = Item(**item_dict)
         db.add(item)
         db.flush()
         return item
@@ -176,19 +193,17 @@ class TransactionTarget(Base):
     )
 
     @staticmethod
-    def get_transaction_target(
-        db: Session, transaction_target: schemas.TransactionTargetBase
-    ):
+    def get_transaction_target(db: Session, transaction_target: str):
         transaction_target = (
             db.query(TransactionTarget)
-            .filter(TransactionTarget.name == transaction_target.name)
+            .filter(TransactionTarget.name == transaction_target)
             .first()
         )
 
         if transaction_target:
             return transaction_target
         else:
-            transaction_target = TransactionTarget(**transaction_target)
+            transaction_target = TransactionTarget(name=transaction_target)
             db.add(transaction_target)
             db.flush()
             return transaction_target
@@ -207,9 +222,10 @@ class Transaction(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     payment_method_id = Column(Integer, ForeignKey("payment_method.id"))
-    item_id = Column(Integer, ForeignKey("item.id"))
 
     date = Column(Date, default=datetime.now)
 
     payment_method = relationship("PaymentMethod", back_populates="transactions")
-    item = relationship("Item")
+    items = relationship(
+        "Item", secondary="transaction_item_association", back_populates="transactions"
+    )

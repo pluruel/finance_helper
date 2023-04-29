@@ -153,7 +153,7 @@ class TransactionCreate(BaseModel):
     family: Optional[str] = None
     date: date
     payment_method: PaymentMethodData
-    item: ItemData
+    items: List[ItemData]
 
 
 class Transaction(TransactionBase):
