@@ -156,8 +156,16 @@ class TransactionCreate(BaseModel):
     items: List[ItemData]
 
 
+class TransactionDelete(BaseModel):
+    year: int
+    month: int
+
+
 class Transaction(TransactionBase):
     id: int
+    date: date
+    payment_method: PaymentMethodData
+    items: List[ItemData]
 
     class Config:
         orm_mode = True

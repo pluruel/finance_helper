@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Type
 
 from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
@@ -29,3 +29,21 @@ def read_transaction(transaction_id: int, db: Session = Depends(get_db)):
     if transaction is None:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return transaction
+
+
+@router.post("/remove_month", response_model=List[int])
+def delete_transaction(
+    target: schemas.TransactionDelete, db: Session = Depends(get_db)
+):
+    result = crud.transaction.delete_month(db, target)
+
+    return result
+
+
+@router.post("/retrive_month", response_model=List[schemas.Transaction])
+def delete_transaction(
+    target: schemas.TransactionDelete, db: Session = Depends(get_db)
+):
+    result = crud.transaction.retrive_month(db, target)
+
+    return result

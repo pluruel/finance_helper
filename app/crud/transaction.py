@@ -1,6 +1,9 @@
 import traceback
+from datetime import date, timedelta
+from typing import List, Type
 
 from fastapi import HTTPException
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
@@ -75,6 +78,42 @@ class CRUDTransaction(
 
         db.refresh(transaction)
         return transaction
+
+    def delete_all(self, db: Session):
+        db.query(Transaction).all().delete(synchronize_session=False)
+
+    def delete_month(self, db: Session, target: schemas.TransactionDelete) -> List[int]:
+        start_date = date(target.year, target.month, 1)
+        end_date = start_date + timedelta(days=32)
+        end_date = end_date.replace(day=1)
+        results = (
+            db.query(Transaction)
+            .with_entities(Transaction.id)
+            .filter(and_(Transaction.date >= start_date, Transaction.date < end_date))
+            .all()
+        )
+        results = [item[0] for item in results]
+
+        db.query(Transaction).filter(
+            and_(Transaction.date >= start_date, Transaction.date < end_date)
+        ).delete(synchronize_session=False)
+        db.commit()
+
+        return results
+
+    def retrive_month(
+        self, db: Session, target: schemas.TransactionDelete
+    ) -> list[schemas.Transaction]:
+        start_date = date(target.year, target.month, 1)
+        end_date = start_date + timedelta(days=32)
+        end_date = end_date.replace(day=1)
+
+        results = (
+            db.query(Transaction)
+            .filter(and_(Transaction.date >= start_date, Transaction.date < end_date))
+            .all()
+        )
+        return results
 
 
 transaction = CRUDTransaction(Transaction)

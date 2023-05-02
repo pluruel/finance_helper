@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 662ce97e3984
+Revision ID: 65eaf9a5cf48
 Revises: 
-Create Date: 2023-04-29 11:17:02.585836
+Create Date: 2023-05-02 23:10:06.850512
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "662ce97e3984"
+revision = "65eaf9a5cf48"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -149,13 +149,9 @@ def upgrade() -> None:
         "transaction_target_item",
         sa.Column("transaction_target_id", sa.Integer(), nullable=False),
         sa.Column("item_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(["item_id"], ["item.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(
-            ["item_id"],
-            ["item.id"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["transaction_target_id"],
-            ["transaction_target.id"],
+            ["transaction_target_id"], ["transaction_target.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("transaction_target_id", "item_id"),
     )
@@ -163,13 +159,9 @@ def upgrade() -> None:
         "transaction_item_association",
         sa.Column("transaction_id", sa.Integer(), nullable=False),
         sa.Column("item_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(["item_id"], ["item.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(
-            ["item_id"],
-            ["item.id"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["transaction_id"],
-            ["transaction.id"],
+            ["transaction_id"], ["transaction.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("transaction_id", "item_id"),
     )

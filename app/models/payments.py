@@ -143,12 +143,6 @@ class Price(Base):
             return price
 
 
-class TransactionItemAssociation(Base):
-    __tablename__ = "transaction_item_association"
-    transaction_id = Column(Integer, ForeignKey("transaction.id"), primary_key=True)
-    item_id = Column(Integer, ForeignKey("item.id"), primary_key=True)
-
-
 class Item(Base):
     __tablename__ = "item"
     id = Column(Integer, primary_key=True, index=True)
@@ -181,6 +175,16 @@ class Item(Base):
         return item
 
 
+class TransactionItemAssociation(Base):
+    __tablename__ = "transaction_item_association"
+    transaction_id = Column(
+        Integer, ForeignKey("transaction.id", ondelete="CASCADE"), primary_key=True
+    )
+    item_id = Column(
+        Integer, ForeignKey("item.id", ondelete="CASCADE"), primary_key=True
+    )
+
+
 class TransactionTarget(Base):
     __tablename__ = "transaction_target"
 
@@ -211,9 +215,13 @@ class TransactionTarget(Base):
 class TransactionTargetItem(Base):
     __tablename__ = "transaction_target_item"
     transaction_target_id = Column(
-        Integer, ForeignKey("transaction_target.id"), primary_key=True
+        Integer,
+        ForeignKey("transaction_target.id", ondelete="CASCADE"),
+        primary_key=True,
     )
-    item_id = Column(Integer, ForeignKey("item.id"), primary_key=True)
+    item_id = Column(
+        Integer, ForeignKey("item.id", ondelete="CASCADE"), primary_key=True
+    )
 
 
 class Transaction(Base):
