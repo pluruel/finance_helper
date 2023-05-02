@@ -164,8 +164,8 @@ class TransactionDelete(BaseModel):
 class Transaction(TransactionBase):
     id: int
     date: date
-    payment_method: PaymentMethodData
-    items: List[ItemData]
+    payment_method: PaymentMethod
+    items: List[Item]
 
     class Config:
         orm_mode = True
